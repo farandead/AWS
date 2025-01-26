@@ -1,0 +1,18 @@
+// IMPORTANT COMMANDS
+
+Creating a bucket 
+->  aws s3api create-bucket --bucket aws-solution-example \
+    --region eu-north-1 \
+    --create-bucket-configuration LocationConstraint=eu-north-1
+Listing all the buckets
+->  aws s3api list-buckets --query <Options> --output json/text/table  -> you can make the buckets show just the names by doing Bucket[].names
+->  aws s3api list-buckets --query "Bucket[?Name = '<NAMEOFBUCKET>'] -> to get a bucket by its name
+->  aws s3api list-objects --bucket aws-solution-arch -> to get all the objects inside of the bucket 
+UPLOADING OBJECTS TO A BUCKET 
+->  aws s3 sync <OBJECTDIRECTORY> s3://aws-solution-arch
+->  aws s3api put-object --bucket <aws-solution-arch> --key <FILENAME/KEY> --content-type <plain/txt> --body <FILENAME/KEY>
+// S3 Bucket Notes
+
+->  S3 database works by creating objects its like an object storage system and the folders inside of the buckets are not actual folders but rather they are like prefixes to the object that is stored in the folders
+    They can have a size from 0 bytes to 5 terabytes.
+     
