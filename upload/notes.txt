@@ -1,0 +1,5 @@
+// S3 Bucket Notes
+
+->  S3 database works by creating objects its like an object storage system and the folders inside of the buckets are not actual folders but rather they are like prefixes to the object that is stored in the folders
+    They can have a size from 0 bytes to 5 terabytes.
+     

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <title>Pretty Page</title>
+    <style>
+      body {
+        font-family: "Roboto", serif;
+        background-color: #f0f8ff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        text-align: center;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+      p {
+        color: #666;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-top: 20px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Welcome to My Pretty Page</h1>
+      <p>This is a simple and elegant HTML page with some CSS styling.</p>
+      <a href="#" class="button">Click Me</a>
+      <script>
+        const xhr = new XMLHttpRequest();
+        xhr.open(
+          "POST",
+          "https://f7duyhth4g.execute-api.eu-north-1.amazonaws.com/Prod/hello",
+          true
+        );
+
+        // Send the proper header information along with the request
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/json"
+        );
+
+        xhr.onreadystatechange = () => {
+          // Call a function when the state changes.
+          if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            // Request finished. Do processing here.
+            const results = JSON.parse(xhr.responseText);
+            console.log('results','results');
+          }
+
+        };
+
+        xhr.send("");
+        // xhr.send(new Int8Array());
+        // xhr.send(document);
+      </script>
+    </div>
+  </body>
+</html>

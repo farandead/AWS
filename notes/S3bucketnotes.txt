@@ -1,0 +1,713 @@
+// IMPORTANT COMMANDS
+
+Creating a bucket 
+->  aws s3api create-bucket --bucket aws-solution-example \
+    --region eu-north-1 \
+    --create-bucket-configuration LocationConstraint=eu-north-1
+Listing all the buckets
+->  aws s3api list-buckets --query <Options> --output json/text/table  -> you can make the buckets show just the names by doing Bucket[].names
+->  aws s3api list-buckets --query "Bucket[?Name = '<NAMEOFBUCKET>'] -> to get a bucket by its name
+->  aws s3api list-objects --bucket aws-solution-arch -> to get all the objects inside of the bucket 
+UPLOADING OBJECTS TO A BUCKET 
+->  aws s3 sync <OBJECTDIRECTORY> s3://aws-solution-arch
+->  aws s3api put-object --bucket <aws-solution-arch> --key <FILENAME/KEY> --content-type <plain/txt> --body <FILENAME/KEY>
+// S3 Bucket Notes
+
+->  S3 database works by creating objects its like an object storage system and the folders inside of the buckets are not actual folders but rather they are like prefixes to the object that is stored in the folders
+    They can have a size from 0 bytes to 5 terabytes.
+
+// NAMING CONVENTIONS 
+
+Bucket Naming Rules:
+- Bucket names must be between 3 and 63 characters in length.
+- Bucket names can consist only of lowercase letters, numbers, dots (.), and hyphens (-).
+- Bucket names must begin and end with a letter or number.
+- Bucket names must not be formatted as an IP address (e.g., 192.168.1.1).
+- Bucket names must not contain two adjacent periods.
+- Bucket names must not contain dashes next to periods (e.g., "my-.bucket" and "my.-bucket" are invalid).
+
+Object Key Naming Rules:
+- Object keys can be any Unicode character, with a maximum length of 1,024 bytes.
+- Object keys can include any character, including special characters like spaces, slashes (/), and backslashes (\).
+- Object keys should not start with a forward slash (/) to avoid confusion with absolute paths.
+
+// S3 BUCKET RESTRICTIONS AND LIMITATIONS
+
+- You can create up to 100 buckets per AWS account by default. If you need more, you can request a service limit increase.
+- The maximum size of a single object that can be uploaded in a single PUT operation is 5 GB. For objects larger than 5 GB, you must use the multipart upload API.
+- The maximum size of a single object that can be stored in S3 is 5 TB.
+- There is no limit to the number of objects that can be stored in a bucket.
+- The maximum number of parts for a multipart upload is 10,000.
+- The minimum size of a part for a multipart upload, except for the last part, is 5 MB.
+- The maximum length of the bucket policy is 20 KB.
+- The maximum length of the lifecycle policy is 1,000 rules.
+- The maximum length of the CORS configuration is 100 rules.
+- The maximum number of tags per bucket is 50.
+- The maximum number of tags per object is 10.
+// S3 BUCKET TYPES
+
+- Standard:
+    - General-purpose storage for frequently accessed data.
+    - Low latency and high throughput performance.
+    - Designed for 99.999999999% (11 9's) durability and 99.99% availability over a given year.
+
+- Intelligent-Tiering:
+    - Optimizes costs by automatically moving data to the most cost-effective access tier.
+    - Ideal for data with unknown or changing access patterns.
+    - No retrieval charges in the Frequent Access tier.
+
+- Standard-IA (Infrequent Access):
+    - Lower-cost storage for data that is accessed less frequently but requires rapid access when needed.
+    - Designed for 99.999999999% (11 9's) durability and 99.9% availability over a given year.
+    - Retrieval fee applies.
+
+- One Zone-IA:
+    - Lower-cost option for infrequently accessed data that does not require multiple Availability Zone resilience.
+    - Designed for 99.999999999% (11 9's) durability and 99.5% availability over a given year.
+    - Retrieval fee applies.
+
+- Glacier:
+    - Low-cost storage for data archiving and long-term backup.
+    - Retrieval times range from minutes to hours.
+    - Designed for 99.999999999% (11 9's) durability.
+
+- Glacier Deep Archive:
+    - Lowest-cost storage for long-term data archiving that is accessed once or twice a year.
+    - Retrieval times within 12 hours.
+    - Designed for 99.999999999% (11 9's) durability.
+
+
+// GENERAL PURPOSE BUCKETS
+
+- General-purpose buckets are used for storing frequently accessed data.
+- They offer low latency and high throughput performance.
+- Suitable for a wide range of use cases, including backup, content distribution, and big data analytics.
+- Designed for 99.999999999% (11 9's) durability and 99.99% availability over a given year.
+- Examples include Standard and Intelligent-Tiering storage classes.
+-There is a default limit of 100 general buckets per account.
+
+// DIRECTORY BUCKETS
+
+- Directory buckets are used to organize objects in a hierarchical structure.
+- They use prefixes to simulate a directory structure within the bucket.
+- Useful for organizing data in a way that is easy to navigate and manage.
+- There are no actual directories; the structure is purely logical.
+- Object keys can include slashes (/) to represent directories and subdirectories.
+- General limit of 10 directory buckets per account. 
+
+// FACTS ABOUT BUCKETS
+- The folder you create in a general purpose buckets they dont have a size they are of 0 bytes and are kind of like a key prefix for that object that is in the folder -> myfolder/<objectName>
+
+// S3 OBJECT OVERVIEW
+- S3 objects are resources that represent data and is not infrastructure
+    -Etags -> way to detect when the contents of an object has changed without download the contents
+    -Checksums -> enusres the inegrity of a files being uploaded or downloaded
+    -Object Prefixs -> simulates file-system folders in a flat hierarchy
+    -Object Locking -> makes data files immutable
+
+
+- An S3 object consists of the following components:
+    - Key: The unique identifier for the object within a bucket. Each object in a bucket has exactly one key.
+    - Value: The content/data of the object. This can be any sequence of bytes, such as a file, image, or video.
+    - Version ID: A unique identifier for the version of the object. S3 supports versioning, allowing multiple versions of an object to be stored.
+    - Metadata: A set of name-value pairs that describe the object. Metadata can be system-defined (e.g., Content-Type, Content-Length) or user-defined.
+    - Subresources: Additional information associated with the object, such as access control lists (ACLs) and torrent information.
+    - Access Control Information: Defines who can access the object and what operations they can perform. This can be managed using ACLs, bucket policies, and IAM policies.
+
+- Key Characteristics:
+    - Keys are case-sensitive.
+    - Keys can be up to 1,024 bytes in length.
+    - Keys can include any Unicode character, including special characters like spaces, slashes (/), and backslashes (\).
+
+- Object Storage Classes:
+    - Standard: General-purpose storage for frequently accessed data.
+    - Intelligent-Tiering: Optimizes costs by automatically moving data to the most cost-effective access tier.
+    - Standard-IA (Infrequent Access): Lower-cost storage for data that is accessed less frequently but requires rapid access when needed.
+    - One Zone-IA: Lower-cost option for infrequently accessed data that does not require multiple Availability Zone resilience.
+    - Glacier: Low-cost storage for data archiving and long-term backup.
+    - Glacier Deep Archive: Lowest-cost storage for long-term data archiving that is accessed once or twice a year.
+
+- Object Operations:
+    - PUT: Upload an object to a bucket.
+    - GET: Retrieve an object from a bucket.
+    - DELETE: Remove an object from a bucket.
+    - COPY: Create a copy of an object that is already stored in S3.
+    - HEAD: Retrieve metadata from an object without returning the object itself.
+    - POST: Add an object to a bucket using HTML forms.
+
+- Object Lifecycle Management:
+    - S3 allows you to define lifecycle rules to automatically transition objects to different storage classes or delete them after a specified period.
+    - Lifecycle rules can be based on object age, creation date, or other criteria.
+    - Useful for managing storage costs and ensuring data retention policies are met.
+
+
+    // ETAGS
+
+    - ETags (Entity Tags) are a mechanism used by S3 to help manage object versioning and caching.
+    - An ETag is a hash of the object data, which can be used to detect changes to the content of an object.
+    - When an object is uploaded to S3, an ETag is automatically generated and returned in the response.
+    - ETags are particularly useful for verifying the integrity of objects during upload and download operations.
+    - They can also be used to implement conditional requests, such as checking if an object has changed before downloading it.
+
+    Example:
+    1. Upload an object and get its ETag:
+    aws s3api put-object --bucket my-bucket --key my-object --body my-file.txt
+
+    Output:
+    {
+        "ETag": "\"9b2cf535f27731c974343645a3985328\""
+    }
+
+    2. Use the ETag to verify the integrity of the object:
+    aws s3api head-object --bucket my-bucket --key my-object
+
+    Output: 
+    {
+        "ETag": "\"9b2cf535f27731c974343645a3985328\"",
+        "Content-Length": "1234",
+        "Content-Type": "text/plain",
+        ...
+    }
+
+// CHECKSUMS
+
+- Checksums ensure data integrity during upload and download.
+- S3 supports various checksum algorithms: CRC32, CRC32C, SHA-1, SHA-256.
+- Checksums can be calculated and verified by S3 to detect data corruption.
+- Useful for validating the integrity of objects transferred to and from S3.
+- Automatically generated and stored by S3 for each object.
+- Can be used to compare the checksum of the uploaded/downloaded object with the original to ensure data consistency.
+
+
+// AWS CLI NOTES
+
+// S3 COMMANDS
+
+- aws s3:
+    - High-level commands for managing S3 buckets and objects.
+    - Simplifies common tasks such as uploading, downloading, and syncing files.
+    - Examples:
+        - aws s3 ls s3://my-bucket: List objects in a bucket.
+        - aws s3 cp my-file.txt s3://my-bucket/my-file.txt: Upload a file to a bucket.
+        - aws s3 sync my-directory s3://my-bucket: Sync a local directory with a bucket.
+
+- aws s3api:
+    - Low-level commands for interacting with the S3 API.
+    - Provides more granular control over S3 operations.
+    - Examples:
+        - aws s3api create-bucket --bucket my-bucket --region us-west-2: Create a new bucket.
+        - aws s3api list-objects --bucket my-bucket: List objects in a bucket.
+        - aws s3api put-object --bucket my-bucket --key my-file.txt --body my-file.txt: Upload an object to a bucket.
+
+// S3CONTROL COMMANDS
+
+- aws s3control:
+    - Commands for managing S3 on Outposts and other advanced S3 features.
+    - Used for tasks such as creating and managing access points, bucket policies, and jobs.
+    - Examples:
+        - aws s3control create-access-point --account-id 123456789012 --name my-access-point --bucket my-bucket: Create an access point for a bucket.
+        - aws s3control get-bucket-policy --account-id 123456789012 --bucket my-bucket: Retrieve the bucket policy for a bucket.
+        - aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectCopy": {"TargetResource": "arn:aws:s3:::destination-bucket"}}' --report '{"Bucket": "arn:aws:s3:::report-bucket"}': Create a job to copy objects between buckets.
+
+// S3OUTPOSTS COMMANDS
+
+- aws s3outposts:
+    - Commands for managing S3 on Outposts.
+    - Used for tasks such as creating and managing Outposts buckets and endpoints.
+    - Examples:
+        - aws s3outposts create-bucket --outpost-id op-1234567890abcdef --bucket my-outposts-bucket: Create a new bucket on an Outpost.
+        - aws s3outposts list-endpoints --outpost-id op-1234567890abcdef: List endpoints for an Outpost.
+        - aws s3outposts delete-bucket --outpost-id op-1234567890abcdef --bucket my-outposts-bucket: Delete a bucket on an Outpost.
+
+
+// S3 REQUEST STYLES
+
+- Virtual Hosted-Style Requests:
+    - The bucket name is part of the domain name.
+    - Example: https://my-bucket.s3.amazonaws.com/my-object
+    -To use this you need to force cli to use virtual hosted-style requests you need to globally conifgure the clie  -> aws configure set s3.adressing_style virtual
+
+- Path-Style Requests:
+    - The bucket name is part of the URL path.
+    - Example: https://s3.amazonaws.com/my-bucket/my-object
+
+// S3 DUALSTACK ENDPOINTS
+
+- Dualstack endpoints enable access to S3 over both IPv4 and IPv6.
+- Useful for applications that need to support both IP address formats.
+- Dualstack endpoints are available for both virtual hosted-style and path-style requests.
+- To use dualstack endpoints, add "dualstack" to the endpoint URL.
+
+Examples:
+- Virtual Hosted-Style Request:
+    - IPv4: https://my-bucket.s3.dualstack.us-west-2.amazonaws.com/my-object
+    - IPv6: https://my-bucket.s3.dualstack.us-west-2.amazonaws.com/my-object
+
+- Path-Style Request:
+    - IPv4: https://s3.dualstack.us-west-2.amazonaws.com/my-bucket/my-object
+    - IPv6: https://s3.dualstack.us-west-2.amazonaws.com/my-bucket/my-object
+
+- To configure the AWS CLI to use dualstack endpoints:
+    - aws configure set s3.use_dualstack_endpoint true
+
+
+
+// EXPRESS ONE ZONE
+
+- Express One Zone is a storage class in Amazon S3 designed for data that is accessed less frequently but requires rapid access when needed.
+- It is a lower-cost option compared to Standard-IA, as it stores data in a single Availability Zone.
+- Suitable for infrequently accessed data that does not require multiple Availability Zone resilience.
+- Designed for 99.999999999% (11 9's) durability and 99.5% availability over a given year.
+- Retrieval fee applies when accessing data.
+
+Key Characteristics:
+- Lower-cost storage for infrequently accessed data.
+- Data is stored in a single Availability Zone.
+- Ideal for data that can be recreated if the Availability Zone is lost.
+- Provides rapid access to data when needed.
+- Retrieval fee applies for data access.
+
+Commands to create an Express One Zone bucket:
+
+1. Create a bucket:
+    aws s3api create-bucket --bucket my-express-one-zone-bucket --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+2. Apply the Express One Zone storage class to an object:
+    aws s3api put-object --bucket my-express-one-zone-bucket --key my-object --body my-file.txt --storage-class S3_EXPRESS_ONEZONE
+
+// ONE ZONE-IA
+
+- One Zone-IA (Infrequent Access) is a storage class in Amazon S3 designed for data that is accessed less frequently but requires rapid access when needed.
+- It is a lower-cost option compared to Standard-IA, as it stores data in a single Availability Zone.
+- Suitable for infrequently accessed data that does not require multiple Availability Zone resilience.
+- Designed for 99.999999999% (11 9's) durability and 99.5% availability over a given year.
+- Retrieval fee applies when accessing data.
+
+Key Characteristics:
+- Lower-cost storage for infrequently accessed data.
+- Data is stored in a single Availability Zone.
+- Ideal for data that can be recreated if the Availability Zone is lost.
+- Provides rapid access to data when needed.
+- Retrieval fee applies for data access.
+
+Commands to create a One Zone-IA bucket:
+
+1. Create a bucket:
+    aws s3api create-bucket --bucket my-one-zone-ia-bucket --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+
+2. Apply the One Zone-IA storage class to an object:
+    aws s3api put-object --bucket my-one-zone-ia-bucket --key my-object --body my-file.txt --storage-class ONEZONE_IA
+
+// GLACIER STORAGE CLASSES VS S3 GLACIER VAULT
+
+// Glacier Storage Classes:
+    - Glacier and Glacier Deep Archive are storage classes within Amazon S3 designed for long-term data archiving and backup.
+    - Glacier:
+        - Low-cost storage for data archiving.
+        - Retrieval times range from minutes to hours.
+        - Designed for 99.999999999% (11 9's) durability.
+        - Suitable for data that is infrequently accessed but requires rapid access when needed.
+        - Retrieval options: Expedited (1-5 minutes), Standard (3-5 hours), Bulk (5-12 hours).
+
+- Glacier Deep Archive:
+    - Lowest-cost storage for long-term data archiving.
+    - Retrieval times within 12 hours.
+    - Designed for 99.999999999% (11 9's) durability.
+    - Suitable for data that is rarely accessed and can tolerate longer retrieval times.
+    - Retrieval options: Standard (12 hours), Bulk (48 hours).
+
+// S3 Glacier Vault:
+    - Amazon S3 Glacier Vault is a separate service from S3, designed specifically for long-term data archiving.
+    - Provides a secure and durable storage solution for data that is rarely accessed.
+    - Vaults are containers for storing archives (individual data files).
+    - Each vault can store an unlimited number of archives.
+    - Supports features like vault lock policies for compliance and data retention.
+    - Retrieval options: Expedited (1-5 minutes), Standard (3-5 hours), Bulk (5-12 hours).
+
+Key Differences:
+    - Glacier storage classes are part of Amazon S3, while Glacier Vault is a separate service.
+    - Glacier storage classes offer integration with S3 features like lifecycle policies and object tagging.
+    - Glacier Vault provides additional features like vault lock policies for compliance.
+    - Both options offer low-cost storage for long-term data archiving, but Glacier Vault is designed for more stringent compliance and data retention requirements.
+
+// GLACIER INSTANT RETRIEVAL
+
+- Glacier Instant Retrieval is a storage class within Amazon S3 designed for data that is accessed occasionally but requires immediate access when needed.
+- It provides the same low-cost storage as Glacier, but with millisecond retrieval times.
+- Suitable for data that is infrequently accessed but requires rapid access without the need for retrieval requests.
+- Designed for 99.999999999% (11 9's) durability and 99.9% availability over a given year.
+- Ideal for use cases such as backup, disaster recovery, and data archiving where immediate access is required.
+
+Key Characteristics:
+- Low-cost storage for infrequently accessed data.
+- Millisecond retrieval times for immediate access.
+- Data is stored across multiple Availability Zones for resilience.
+- Provides the same durability as other S3 storage classes.
+- Retrieval fee applies for data access.
+
+Commands to create a Glacier Instant Retrieval bucket:
+
+1. Create a bucket:
+    aws s3api create-bucket --bucket my-glacier-instant-retrieval-bucket --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+
+2. Apply the Glacier Instant Retrieval storage class to an object:
+    aws s3api put-object --bucket my-glacier-instant-retrieval-bucket --key my-object --body my-file.txt --storage-class GLACIER_IR
+
+// GLACIER FLEXIBLE RETRIEVAL
+
+- Glacier Flexible Retrieval is a storage class within Amazon S3 designed for data that is accessed infrequently but requires flexible retrieval options.
+- It provides low-cost storage with three retrieval options to balance cost and access time.
+- Suitable for data that is infrequently accessed but requires flexible retrieval times based on cost and urgency.
+- Designed for 99.999999999% (11 9's) durability and 99.9% availability over a given year.
+
+Key Characteristics:
+- Low-cost storage for infrequently accessed data.
+- Flexible retrieval options to balance cost and access time.
+- Data is stored across multiple Availability Zones for resilience.
+- Provides the same durability as other S3 storage classes.
+- Retrieval options: Expedited (1-5 minutes) Limited to 250MB, Standard (3-5 hours) No limit, Bulk (5-12 hours) PetaByte worth of data .
+- Archieved Objects will have additional 40Kbs of data 
+    - 32KB for archieve index and archive metadata information
+    - 8KB for the name the object 
+
+Commands to create a Glacier Flexible Retrieval bucket:
+
+1. Create a bucket:
+    aws s3api create-bucket --bucket my-glacier-flexible-retrieval-bucket --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+
+2. Apply the Glacier Flexible Retrieval storage class to an object:
+    aws s3api put-object --bucket my-glacier-flexible-retrieval-bucket --key my-object --body my-file.txt --storage-class GLACIER
+
+
+    // GLACIER DEEP ARCHIVE
+
+    - Glacier Deep Archive is the lowest-cost storage class in Amazon S3, designed for long-term data archiving.
+    - Suitable for data that is rarely accessed and can tolerate longer retrieval times.
+    - Ideal for use cases such as compliance archives, digital media preservation, and long-term backups.
+
+    Key Characteristics:
+    - Lowest-cost storage option for long-term data archiving.
+    - Retrieval times within 12 hours.
+    - Designed for 99.999999999% (11 9's) durability.
+    - Data is stored across multiple Availability Zones for resilience.
+    - Provides the same durability as other S3 storage classes.
+    - Retrieval options: Standard (12 hours), Bulk (48 hours).
+    - Supports S3 features like lifecycle policies and object tagging.
+
+    Commands to create a Glacier Deep Archive bucket:
+
+    1. Create a bucket:
+        aws s3api create-bucket --bucket my-glacier-deep-archive-bucket --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+
+    2. Apply the Glacier Deep Archive storage class to an object:
+        aws s3api put-object --bucket my-glacier-deep-archive-bucket --key my-object --body my-file.txt --storage-class DEEP_ARCHIVE
+
+    // INTELLIGENT-TIERING
+
+    - Intelligent-Tiering is a storage class in Amazon S3 designed to optimize storage costs by automatically moving data to the most cost-effective access tier.
+    - It is ideal for data with unknown or changing access patterns.
+    - Intelligent-Tiering monitors access patterns and moves objects between two access tiers: Frequent Access and Infrequent Access.
+    - There are no retrieval charges for data in the Frequent Access tier.
+
+    Key Characteristics:
+    - Automatically moves data between access tiers based on changing access patterns.
+    - No retrieval charges for data in the Frequent Access tier.
+    - Designed for 99.999999999% (11 9's) durability and 99.9% availability over a given year.
+    - Suitable for data with unpredictable or changing access patterns.
+    - Provides cost savings by optimizing storage costs without performance impact.
+
+    Commands to create an Intelligent-Tiering bucket:
+
+    1. Create a bucket:
+        aws s3api create-bucket --bucket my-intelligent-tiering-bucket --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+
+    2. Apply the Intelligent-Tiering storage class to an object:
+        aws s3api put-object --bucket my-intelligent-tiering-bucket --key my-object --body my-file.txt --storage-class INTELLIGENT_TIERING 
+
+// STORAGE CLASS COMPARISON TABLE
+
+| Attribute                   | Express One-Zone | Standard  | Intelligent Tiering | Standard IA | One-Zone IA | Glacier Instant | Glacier Flexible | Glacier Deep Archive |
+|-----------------------------|-----------------|-----------|---------------------|-------------|-------------|----------------|----------------|--------------------|
+| Durability                  | 11 9’s          | 11 9’s    | 11 9’s              | 11 9’s      | 11 9’s      | 11 9’s         | 11 9’s         | 11 9’s            |
+| Availability                | 99.95%          | 99.99%    | 99.9%               | 99.9%       | 99.5%       | 99.9%          | N/A            | N/A               |
+| Availability SLA            | 99.9%           | 99.99%    | 99%                 | 99%         | 99%         | 99%?           | N/A            | N/A               |
+| AZs                         | 1               | >3        | >3                  | >3          | 1           | >3             | >3             | >3                |
+| Min cap. charge per obj     | N/A             | N/A       | N/A                 | 128kb       | 128kb       | N/A            | 40kb           | 40kb              |
+| Min storage duration charge | N/A             | N/A       | 30 days             | 30 days     | 30 days     | 90 days        | 90 days        | 180 days          |
+| Retrieval fee               | N/A             | N/A       | N/A                 | Per GB      | Per GB      | Per GB         | Per GB         | Per GB            |
+| First byte latency          | Single-digit ms | ms        | ms                  | ms          | ms          | mins to hrs    | hours          | hours             |
+|_____________________________|_________________|___________|_____________________|_____________|_____________|________________|________________|___________________|
+
+// S3 SECURITY OVERVIEW
+
+S3 Security Overview
+
+- Bucket Policies: Define permissions for an entire S3 bucket using JSON-based access policy language.
+- Access Control Lists (ACLs): Provide a legacy method to manage access permissions on individual objects and buckets.
+- AWS PrivateLink for Amazon S3: Enables private network access to S3, bypassing the public internet for enhanced security.
+- Cross-Origin Resource Sharing (CORS): Allows restricted resources on a web page from another domain to be requested.
+- Amazon S3 Block Public Access: Offers settings to easily block public access to all your S3 resources.
+- IAM Access Analyzer for S3: Analyzes resource policies to help identify and mitigate potential access risks.
+- Internetwork Traffic Privacy: Ensures data privacy by encrypting data moving between AWS services and the Internet.
+- Object Ownership: Manages data ownership between AWS accounts when objects are uploaded to S3 buckets.
+- Access Points: Simplifies managing data access at scale for shared datasets in S3.
+- Access Grants: Providing access to S3 data via a directory service e.g. Active Directory.
+- Versioning: Preserves, retrieves, and restores every version of every object stored in an S3 bucket.
+- MFA Delete: Adds an additional layer of security by requiring MFA for the deletion of S3 objects.
+- Object Tags: Provides a way to categorize storage by assigning key-value pairs to S3 objects.
+- In-Transit Encryption: Protects data by encrypting it as it travels to and from S3 over the internet.
+- Server-Side Encryption: Automatically encrypts data when writing it to S3 and decrypts it when downloading.
+- Client-Side Encryption: Encrypts data client-side before uploading to S3 and decrypts it after downloading.
+- Compliance Validation for Amazon S3: Ensures S3 services meet compliance requirements like HIPAA, GDPR, etc.
+- Infrastructure Security: Protects the underlying infrastructure of the S3 service, ensuring data integrity and availability.
+
+
+- Amazon S3 provides multiple layers of security to protect your data, including encryption, access control, and monitoring.
+
+1. Encryption:
+    - Server-Side Encryption (SSE): Encrypts data at rest using AWS-managed keys or customer-provided keys.
+        - SSE-S3: AWS manages the encryption keys.
+        - SSE-KMS: AWS Key Management Service (KMS) manages the encryption keys.
+        - SSE-C: Customer provides the encryption keys.
+    - Client-Side Encryption: Data is encrypted by the client before being uploaded to S3.
+        - Client manages the encryption keys and process.
+
+2. Access Control:
+    - Bucket Policies: JSON-based policies that define access permissions for the entire bucket.
+    - Access Control Lists (ACLs): Define access permissions for individual objects within a bucket.
+    - AWS Identity and Access Management (IAM): Manage access to S3 resources using IAM roles and policies.
+    - Access Points: Simplify managing data access at scale for shared datasets in S3.
+
+3. Monitoring and Logging:
+    - AWS CloudTrail: Logs API calls made to S3 for auditing and monitoring purposes.
+    - S3 Access Logs: Provides detailed records for the requests made to a bucket.
+    - AWS Config: Tracks configuration changes to S3 buckets and objects.
+
+4. Data Protection:
+    - Versioning: Keeps multiple versions of an object to protect against accidental deletion or overwriting.
+    - MFA Delete: Requires multi-factor authentication (MFA) for delete operations to prevent accidental or malicious deletions.
+    - Object Lock: Prevents objects from being deleted or overwritten for a specified retention period.
+
+5. Network Security:
+    - VPC Endpoints: Securely connect to S3 without using the public internet.
+    - Bucket Policies for VPC Endpoints: Restrict access to S3 buckets from specific VPC endpoints.
+    - Transfer Acceleration: Speeds up data transfers to and from S3 using Amazon CloudFront's globally distributed edge locations.
+
+6. Compliance:
+    - S3 is compliant with various industry standards and certifications, such as PCI-DSS, HIPAA, FedRAMP, and GDPR.
+    - AWS Artifact provides access to compliance reports and agreements.
+
+Best Practices:
+    - Enable encryption for data at rest and in transit.
+    - Use IAM roles and policies to grant the least privilege access.
+    - Regularly review and update bucket policies and ACLs.
+    - Enable versioning and MFA Delete for critical data.
+    - Monitor access logs and CloudTrail logs for suspicious activity.
+
+
+// S3 BUCKET POLICIES
+
+- Bucket policies are JSON-based access policy language statements that define permissions for actions on S3 resources.
+- They allow you to control access to buckets and objects based on various conditions, such as IP address, request time, and more.
+- Bucket policies are attached directly to the bucket and apply to all objects within the bucket.
+
+Key Components:
+- Version: Specifies the policy language version. The current version is "2012-10-17".
+- Statement: Contains the individual permissions.
+    - Sid (Optional): An identifier for the statement.
+    - Effect: Specifies whether the statement allows or denies access ("Allow" or "Deny").
+    - Principal: Specifies the user, account, service, or other entity that is allowed or denied access.
+    - Action: Specifies the actions that are allowed or denied (e.g., "s3:GetObject").
+    - Resource: Specifies the bucket and objects to which the policy applies (e.g., "arn:aws:s3:::my-bucket/*").
+    - Condition (Optional): Specifies conditions for when the policy is in effect (e.g., IP address, request time).
+
+Example Bucket Policy:
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ExamplePolicy",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::my-bucket/*",
+            "Condition": {
+                "IpAddress": {
+                    "aws:SourceIp": "192.0.2.0/24"
+                }
+            }
+        }
+
+}
+// S3 BUCKET POLICY VS IAM POLICY
+
+| Attribute               | S3 Bucket Policy                                      | IAM Policy                                             |
+|-------------------------|-------------------------------------------------------|--------------------------------------------------------|
+| Scope                   | Applies to specific S3 buckets and objects            | Applies to IAM users, groups, and roles                |
+| Attachment              | Attached directly to an S3 bucket                     | Attached to IAM identities (users, groups, roles)      |
+| JSON Structure          | JSON-based policy language                            | JSON-based policy language                             |
+| Principal               | Specifies the user, account, or service allowed/denied| Specifies the IAM identity allowed/denied              |
+| Resource                | Specifies S3 buckets and objects                      | Specifies AWS resources (not limited to S3)            |
+| Actions                 | S3-specific actions (e.g., s3:GetObject)              | AWS-wide actions (e.g., s3:GetObject, ec2:StartInstances) |
+| Conditions              | Supports conditions (e.g., IP address, request time)  | Supports conditions (e.g., IP address, request time)   |
+| Use Case                | Control access to S3 resources                        | Control access to AWS resources for IAM identities     |
+| Example                 | Allow public read access to a bucket                  | Allow an IAM user to list buckets                      |
+| Example Policy          | { "Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject", "Resource": "arn:aws:s3:::my-bucket/*" } ] } | { "Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Action": "s3:ListBucket", "Resource": "arn:aws:s3:::my-bucket" } ] } |
+
+// ACCESS GRANTS
+
+- Access Grants provide a way to grant access to S3 data via a directory service, such as Active Directory.
+- They simplify the process of managing permissions for users and groups within an organization.
+- Access Grants can be used to provide temporary or permanent access to S3 resources.
+
+Key Characteristics:
+- Integration with directory services: Access Grants can be linked to users and groups in directory services like Active Directory.
+- Fine-grained permissions: Access Grants allow for detailed control over what actions users can perform on S3 resources.
+- Temporary access: Access Grants can be configured to provide temporary access, which automatically expires after a specified period.
+- Auditing and monitoring: Access Grants can be tracked and monitored to ensure compliance with security policies.
+
+Example Use Cases:
+- Providing temporary access to a contractor for a specific project.
+- Granting access to a group of users in Active Directory to a shared S3 bucket.
+- Managing access to S3 resources for users in a large organization.
+
+Commands to create an Access Grant:
+
+1. Create an Access Grant:
+    aws s3control create-access-grant --account-id 123456789012 --name my-access-grant --bucket my-bucket --permissions read,write --principal arn:aws:iam::123456789012:user/my-user
+
+2. List Access Grants:
+    aws s3control list-access-grants --account-id 123456789012 --bucket my-bucket
+
+3. Delete an Access Grant:
+    aws s3control delete-access-grant --account-id 123456789012 --name my-access-grant --bucket my-bucket
+
+
+    // INTERNWORK TRAFFIC PRIVACY
+
+    - Internetwork Traffic Privacy ensures that data moving between AWS services and the Internet is encrypted and secure.
+    - It protects data in transit from interception and tampering by using encryption protocols such as TLS (Transport Layer Security).
+    - AWS provides several features and best practices to enhance internetwork traffic privacy:
+
+    1. TLS Encryption:
+        - Use TLS to encrypt data in transit between clients and AWS services.
+        - Ensure that all endpoints support TLS and enforce its use for all communications.
+
+    2. VPC Endpoints:
+        - Use VPC endpoints to securely connect to AWS services without using the public internet.
+        - VPC endpoints provide private connectivity between your VPC and AWS services, enhancing security and reducing exposure to the public internet.
+
+    3. AWS PrivateLink:
+        - Use AWS PrivateLink to create private connections between your VPC and AWS services or third-party services.
+        - PrivateLink ensures that traffic remains within the AWS network, reducing the risk of data exposure.
+
+    4. Secure APIs:
+        - Use secure APIs to interact with AWS services, ensuring that all API calls are encrypted and authenticated.
+        - Implement API Gateway to manage and secure API traffic.
+
+    5. Network Access Control:
+        - Use security groups and network ACLs to control inbound and outbound traffic to your AWS resources.
+        - Restrict access to only trusted IP addresses and networks.
+
+    6. Monitoring and Logging:
+        - Enable logging and monitoring to detect and respond to potential security threats.
+        - Use AWS CloudTrail, VPC Flow Logs, and AWS Config to monitor network traffic and configuration changes.
+
+    Best Practices:
+        - Always use encryption for data in transit.
+        - Implement VPC endpoints and AWS PrivateLink for secure connectivity.
+        - Regularly review and update security group and network ACL rules.
+        - Monitor network traffic and access logs for suspicious activity.
+
+    // CROSS-ORIGIN RESOURCE SHARING (CORS)
+
+    - Cross-Origin Resource Sharing (CORS) is a security feature implemented by web browsers to control how web pages can request resources from a different domain than the one that served the web page.
+    - CORS is used to allow or restrict web applications running at one origin (domain) to access resources from a different origin.
+
+    Key Concepts:
+    - Origin: The combination of the scheme (protocol), host (domain), and port of a URL.
+    - Preflight Request: A CORS request that checks if the actual request is safe to send. It uses the HTTP OPTIONS method.
+    - Simple Request: A CORS request that doesn't trigger a preflight request. It uses methods like GET, POST, or HEAD and meets certain criteria.
+    - Actual Request: The request made after a successful preflight request.
+
+    CORS Configuration in Amazon S3:
+    - Amazon S3 allows you to configure CORS rules for your buckets to specify which origins are allowed to access your bucket's resources.
+    - CORS rules are defined in an XML document and can be applied to a bucket using the AWS Management Console, AWS CLI, or SDKs.
+
+    CORS Configuration Elements:
+    - AllowedOrigin: Specifies the origins that are allowed to access the bucket.
+    - AllowedMethod: Specifies the HTTP methods (e.g., GET, PUT, POST) that are allowed for the specified origins.
+    - AllowedHeader: Specifies the headers that are allowed in the actual request.
+    - ExposeHeader: Specifies the headers that are exposed to the client in the response.
+    - MaxAgeSeconds: Specifies how long the results of a preflight request can be cached.
+    // Additional Request Headers:
+    - Accept-Encoding: Specifies the content encoding that the client can understand.
+        Example: Accept-Encoding: gzip, deflate, br
+    - Accept-Language: Specifies the preferred languages for the response.
+        Example: Accept-Language: en-US, en;q=0.9
+    - If-Modified-Since: Makes the request conditional, only fetching the resource if it has been modified since the specified date.
+        Example: If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT
+    - If-None-Match: Makes the request conditional, only fetching the resource if the ETag does not match.
+        Example: If-None-Match: "9b2cf535f27731c974343645a3985328"
+    - Range: Requests only a specific part of the resource.
+        Example: Range: bytes=500-999
+
+    // Additional Response Headers:
+    - Last-Modified: Indicates the date and time at which the resource was last modified.
+        Example: Last-Modified: Wed, 21 Oct 2015 07:28:00 GMT
+    - Cache-Control: Directs caching mechanisms to cache the response.
+        Example: Cache-Control: max-age=3600
+    - Expires: Gives the date/time after which the response is considered stale.
+        Example: Expires: Wed, 21 Oct 2015 07:28:00 GMT
+    - Vary: Indicates the request headers that determine whether a cached response can be used.
+        Example: Vary: Accept-Encoding
+    - Connection: Controls whether the network connection stays open after the current transaction.
+        Example: Connection: keep-alive
+
+    Example CORS Configuration:
+    <CORSConfiguration>
+        <CORSRule>
+            <AllowedOrigin>http://example.com</AllowedOrigin>
+            <AllowedMethod>GET</AllowedMethod>
+            <AllowedMethod>PUT</AllowedMethod>
+            <AllowedMethod>POST</AllowedMethod>
+            <AllowedHeader>*</AllowedHeader>
+            <ExposeHeader>x-amz-server-side-encryption</ExposeHeader>
+            <ExposeHeader>x-amz-request-id</ExposeHeader>
+            <ExposeHeader>x-amz-id-2</ExposeHeader>
+            <MaxAgeSeconds>3000</MaxAgeSeconds>
+        </CORSRule>
+    </CORSConfiguration>
+
+    // EXAMPLES OF RESPONSE AND REQUEST HEADERS
+
+    // Request Headers:
+    - Authorization: Contains the credentials to authenticate a user agent with a server.
+        Example: Authorization: Bearer <token>
+    - Content-Type: Indicates the media type of the resource.
+        Example: Content-Type: application/json
+    - Accept: Specifies the media types that are acceptable for the response.
+        Example: Accept: application/json
+    - User-Agent: Contains information about the user agent originating the request.
+        Example: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3
+    - Host: Specifies the domain name of the server and the TCP port number on which the server is listening.
+        Example: Host: www.example.com
+    - Cache-Control: Directs caching mechanisms to cache the response.
+        Example: Cache-Control: no-cache
+    - X-Amz-Date: The date and time of the request, used in AWS Signature Version 4.
+        Example: X-Amz-Date: 20210315T123456Z
+
+    // Response Headers:
+    - Content-Length: Indicates the size of the response body in bytes.
+        Example: Content-Length: 348
+    - Content-Type: Indicates the media type of the response.
+        Example: Content-Type: application/json
+    - Date: The date and time at which the message was originated.
+        Example: Date: Mon, 15 Mar 2021 12:34:56 GMT
+    - ETag: A unique identifier for a specific version of a resource.
+        Example: ETag: "9b2cf535f27731c974343645a3985328"
+    - Server: Contains information about the software used by the origin server to handle the request.
+        Example: Server: Apache/2.4.1 (Unix)
+    - X-Amz-Request-Id: A unique identifier for the request, used for debugging and tracing.
+        Example: X-Amz-Request-Id: 1234567890abcdef
+    - Access-Control-Allow-Origin: Specifies the origins that are allowed to access the resource.
+        Example: Access-Control-Allow-Origin: *
